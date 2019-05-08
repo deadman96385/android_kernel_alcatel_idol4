@@ -3793,6 +3793,11 @@ int mdss_mdp_ctl_update_fps(struct mdss_mdp_ctl *ctl)
 	ATRACE_END("config_fps");
 
 exit:
+<<<<<<< HEAD
+=======
+	//mutex_unlock(&ctl->offlock);//eagle.li del for defect1251992
+
+>>>>>>> ebc31dc49b85... tcl changes for idol4
 	return ret;
 }
 

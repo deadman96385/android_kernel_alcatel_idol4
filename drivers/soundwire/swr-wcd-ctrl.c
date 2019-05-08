@@ -740,6 +740,12 @@ static void swrm_slvdev_datapath_control(struct swr_master *master,
 		    SWRM_MCP_FRAME_CTRL_BANK_SSP_PERIOD_BMSK);
 	u8 inactive_bank;
 
+	if (!swrm) {
+		pr_err("%s: Invalid handle to swr controller\n",
+			__func__);
+		return;
+	}
+
 	bank = get_inactive_bank_num(swrm);
 
 	dev_dbg(swrm->dev, "%s: enable: %d, cfg_devs: %d\n",
@@ -1003,6 +1009,13 @@ static int swrm_disconnect_port(struct swr_master *master,
 	u8 mport_id = 0;
 	int port_type = 0;
 	struct swr_mstr_ctrl *swrm = swr_get_ctrl_data(master);
+
+	if (!swrm) {
+		dev_err(&master->dev,
+			"%s: Invalid handle to swr controller\n",
+			__func__);
+		return -EINVAL;
+	}
 
 	if (!swrm) {
 		dev_err(&master->dev,

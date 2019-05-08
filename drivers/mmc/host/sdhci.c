@@ -1224,7 +1224,11 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
 				(msecs_to_jiffies(cmd->cmd_timeout_ms * 2)));
 
 	host->cmd = cmd;
-
+        /*MODIFIED-BEGIN by guotao.guo, 2016-04-15,BUG-1952033*/
+        //add by gtguo for defect 1871748 with qc patch begin
+        host->busy_handle=0;
+        //end
+        /*MODIFIED-END by guotao.guo,BUG-1952033*/
 	sdhci_prepare_data(host, cmd);
 
 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
@@ -3111,9 +3115,17 @@ static void sdhci_cmd_irq(struct sdhci_host *host, u32 intmask)
 		if (host->cmd->data)
 			DBG("Cannot wait for busy signal when also "
 				"doing a data transfer");
-		else if (!(host->quirks & SDHCI_QUIRK_NO_BUSY_IRQ))
-			return;
-
+/*MODIFIED-BEGIN by guotao.guo, 2016-04-15,BUG-1952033*/
+//add by gtguo for defect 1871748 with qc patch begin
+                //else if (!(host->quirks & SDHCI_QUIRK_NO_BUSY_IRQ))
+	        else if (!(host->quirks & SDHCI_QUIRK_NO_BUSY_IRQ)
+	                 && !host->busy_handle) {
+	/* Mark that command complete before busy is ended */
+	         host->busy_handle = 1;
+                 return;
+                }
+//end
+/*MODIFIED-END by guotao.guo,BUG-1952033*/
 		/* The controller does not support the end-of-busy IRQ,
 		 * fall through and take the SDHCI_INT_RESPONSE */
 	}
@@ -3183,8 +3195,21 @@ static void sdhci_data_irq(struct sdhci_host *host, u32 intmask)
 		 */
 		if (host->cmd && (host->cmd->flags & MMC_RSP_BUSY)) {
 			if (intmask & SDHCI_INT_DATA_END) {
-				sdhci_finish_command(host);
-				return;
+/*MODIFIED-BEGIN by guotao.guo, 2016-04-15,BUG-1952033*/
+//add by gtguo for defect 1871748 with qc patch begin
+			//sdhci_finish_command(host);
+	               /*
+	                * Some cards handle busy-end interrupt
+	                * before the command completed, so make
+	                * sure we do things in the proper order.
+	                */
+	                  if (host->busy_handle)
+	                      sdhci_finish_command(host);
+	                  else
+	                      host->busy_handle = 1;
+//end
+		          return;
+		          /*MODIFIED-END by guotao.guo,BUG-1952033*/
 			}
 			if (host->quirks2 &
 				SDHCI_QUIRK2_IGNORE_DATATOUT_FOR_R1BCMD)

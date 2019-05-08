@@ -75,6 +75,15 @@ struct sdhci_pinctrl_data {
 	struct pinctrl          *pctrl;
 	struct pinctrl_state    *pins_active;
 	struct pinctrl_state    *pins_sleep;
+/*[BUGFIX]-Add-BEGIN by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
+/* [PLATFORM]-Mod-BEGIN by TCTSH.FanJianjun, 2015/11/18, idol455 follows idol4s, task:884456 */
+/* [PLATFORM]-Mod-BEGIN by TCTNB.Yubin, 2015/11/11, config sim det gpios to make sd card det voltage is right */
+#if defined(CONFIG_TCT_8X76_COMMON)
+       struct pinctrl_state    *pins_onetime;
+#endif
+/* [PLATFORM] ADD END by YuBin */
+/* [PLATFORM]-Mod-END by FanJianjun */
+/*[BUGFIX]-Add-END by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
 };
 
 struct sdhci_msm_bus_voting_data {

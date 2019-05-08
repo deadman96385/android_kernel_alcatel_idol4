@@ -1,4 +1,4 @@
-/* Copyright (c) 2012-2016, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2012-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -1895,10 +1895,7 @@ int ipa_q6_pre_shutdown_cleanup(void)
 		IPAERR("Failed to disable aggregation on Q6 pipes\n");
 		BUG();
 	}
-
-	/* set proxy vote before decrement */
-	ipa_proxy_clk_vote();
-	ipa_dec_client_disable_clks();
+	ipa_ctx->q6_proxy_clk_vote_valid = true;
 	return 0;
 }
 
@@ -3018,7 +3015,12 @@ void ipa_inc_acquire_wakelock(enum ipa_wakelock_ref_client ref_client)
 {
 	unsigned long flags;
 
+	if (ref_client >= IPA_WAKELOCK_REF_CLIENT_MAX)
+		return;
 	spin_lock_irqsave(&ipa_ctx->wakelock_ref_cnt.spinlock, flags);
+	if (ipa_ctx->wakelock_ref_cnt.cnt & (1 << ref_client))
+		IPAERR("client enum %d mask already set. ref cnt = %d\n",
+		ref_client, ipa_ctx->wakelock_ref_cnt.cnt);
 	ipa_ctx->wakelock_ref_cnt.cnt |= (1 << ref_client);
 	if (ipa_ctx->wakelock_ref_cnt.cnt)
 		__pm_stay_awake(&ipa_ctx->w_lock);
@@ -3026,6 +3028,7 @@ void ipa_inc_acquire_wakelock(enum ipa_wakelock_ref_client ref_client)
 		ipa_ctx->wakelock_ref_cnt.cnt, ref_client);
 	spin_unlock_irqrestore(&ipa_ctx->wakelock_ref_cnt.spinlock, flags);
 }
+/* Qcom patch merged-END by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
 
 /**
  * ipa_dec_release_wakelock() - Decrease active clients counter
@@ -3039,6 +3042,8 @@ void ipa_dec_release_wakelock(enum ipa_wakelock_ref_client ref_client)
 {
 	unsigned long flags;
 
+	if (ref_client >= IPA_WAKELOCK_REF_CLIENT_MAX)
+		return;
 	spin_lock_irqsave(&ipa_ctx->wakelock_ref_cnt.spinlock, flags);
 	ipa_ctx->wakelock_ref_cnt.cnt &= ~(1 << ref_client);
 	IPADBG("active wakelock ref cnt = %d client enum %d\n",
@@ -3047,6 +3052,7 @@ void ipa_dec_release_wakelock(enum ipa_wakelock_ref_client ref_client)
 		__pm_relax(&ipa_ctx->w_lock);
 	spin_unlock_irqrestore(&ipa_ctx->wakelock_ref_cnt.spinlock, flags);
 }
+/* Qcom patch merged-END by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
 
 static int ipa_setup_bam_cfg(const struct ipa_plat_drv_res *res)
 {

@@ -295,4 +295,9 @@ config SEEMP_CORE
           This option enables Qualcomm Technologies, Inc. Snapdragron Smart Protection to
           detect anomalies in various activities. It records task activities in a log and
           rates the actions according to whether a typical user would use the tools.
+config TCT_LONGPRESS_DISABLE
+	bool "for disable long press power key"
+	default n
+	help
+		This option is only for PTCRB test
 endmenu

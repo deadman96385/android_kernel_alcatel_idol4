@@ -265,7 +265,11 @@ static void ext4_end_bio(struct bio *bio, int error)
 				continue;
 			}
 			clear_buffer_async_write(bh);
-			if (error)
+			/*
+			 * Defect-1048438, too much log trigger watchdog bark,
+			 * this is just a temporary solution, until we find root cause.
+			 */
+			if (0)
 				buffer_io_error(bh);
 		} while ((bh = bh->b_this_page) != head);
 		bit_spin_unlock(BH_Uptodate_Lock, &head->b_state);
@@ -277,6 +281,11 @@ static void ext4_end_bio(struct bio *bio, int error)
 
 	if (error) {
 		io_end->flag |= EXT4_IO_END_ERROR;
+	    /*
+		 * Defect-1198357, too much log trigger watchdog bark,
+		 * this is just a temporary solution, until we find root cause.
+		 */
+		if (0)
 		ext4_warning(inode->i_sb, "I/O error writing to inode %lu "
 			     "(offset %llu size %ld starting block %llu)",
 			     inode->i_ino,

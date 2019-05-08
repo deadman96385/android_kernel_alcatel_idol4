@@ -1304,7 +1304,11 @@ static int qpnp_pon_config_init(struct qpnp_pon *pon)
 								cfg->pon_type);
 			return -EINVAL;
 		}
-
+/* [BUFFIX]-Add- by TCTSH.XQJ, PR-967595, 2015/11/26,disable s3 for PTCRB test*/
+#ifdef	CONFIG_TCT_LONGPRESS_DISABLE
+		cfg->support_reset=0;
+#endif
+/* [BUFFIX]-end- by TCTSH.XQJ,*/
 		if (cfg->support_reset) {
 			/*
 			 * Get the reset parameters (bark debounce time and
@@ -1899,6 +1903,12 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 	else /* default combination */
 		s3_src_reg = QPNP_PON_S3_SRC_KPDPWR_AND_RESIN;
 
+/* [BUFFIX]-Add- by TCTSH.XQJ, PR-967595, 2015/11/26,disable s3 for PTCRB test*/
+#ifdef	CONFIG_TCT_LONGPRESS_DISABLE
+    s3_src_reg=QPNP_PON_S3_SRC_RESIN;
+#endif
+/* [BUFFIX]-end- by TCTSH.XQJ,*/
+
 	/*
 	 * S3 source is a write once register. If the register has
 	 * been configured by bootloader then this operation will
@@ -1941,6 +1951,11 @@ static int qpnp_pon_probe(struct spmi_device *spmi)
 			rc);
 		return rc;
 	}
+/* [BUFFIX]-Add- by TCTSH.XQJ, PR-967595, 2015/11/26,disable s3 for PTCRB test*/
+#ifdef	CONFIG_TCT_LONGPRESS_DISABLE
+    qpnp_pon_wd_config(0);
+#endif
+/* [BUFFIX]-end- by TCTSH.XQJ,*/
 
 	if (of_property_read_bool(spmi->dev.of_node,
 					"qcom,secondary-pon-reset")) {

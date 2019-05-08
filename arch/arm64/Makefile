@@ -74,7 +74,27 @@ zinstall install: vmlinux
 
 dtbs: scripts
 	$(Q)$(MAKE) $(build)=$(boot)/dts dtbs
+ifndef CONFIG_TCT_8X76_COMMON
 	$(Q)$(MAKE) $(build)=$(boot)/dts/qcom dtbs
+endif
+ifdef CONFIG_TCT_8X76_IDOL4S
+	$(Q)$(MAKE) $(build)=$(boot)/dts/idol4s dtbs
+endif
+ifdef CONFIG_TCT_8X76_IDOL4S_VDF
+	$(Q)$(MAKE) $(build)=$(boot)/dts/idol4s_vdf dtbs
+endif
+ifdef CONFIG_TCT_8X76_IDOL4
+	$(Q)$(MAKE) $(build)=$(boot)/dts/idol4 dtbs
+endif
+ifdef CONFIG_TCT_8X76_IDOL452_CRICKET
+	$(Q)$(MAKE) $(build)=$(boot)/dts/idol452_cricket dtbs
+endif
+ifdef CONFIG_TCT_8X76_POP457
+	$(Q)$(MAKE) $(build)=$(boot)/dts/pop457 dtbs
+endif
+ifdef CONFIG_TCT_8X76_IDOL4C
+	$(Q)$(MAKE) $(build)=$(boot)/dts/idol4c dtbs
+endif
 
 PHONY += vdso_install
 vdso_install:

@@ -56,6 +56,7 @@
 	do { _stat += (_size); if (_stat > _max) _max = _stat; } while (0)
 
 #define KGSL_MAX_NUMIBS 100000
+#define KGSL_MAX_SYNCPOINTS 32
 
 struct kgsl_device;
 struct kgsl_context;

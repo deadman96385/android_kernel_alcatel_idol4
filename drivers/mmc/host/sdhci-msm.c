@@ -1378,6 +1378,23 @@ static int sdhci_msm_parse_pinctrl_info(struct device *dev,
 		dev_err(dev, "Could not get sleep pinstates, err:%d\n", ret);
 		goto out;
 	}
+
+/*[BUGFIX]-Add-BEGIN by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
+/* [PLATFORM]-Mod-BEGIN by TCTSH.FanJianjun, 2015/11/18, idol455 follows idol4s, task:884456 */
+/* [PLATFORM]-Mod-BEGIN by TCTNB.Yubin, 2015/11/11, config sim det gpios to make sd card det voltage is right */
+#if defined(CONFIG_TCT_8X76_COMMON)
+       pctrl_data->pins_onetime = pinctrl_lookup_state(
+                       pctrl_data->pctrl, "onetime");
+       if (IS_ERR(pctrl_data->pins_onetime)) {
+               ret = PTR_ERR(pctrl_data->pins_onetime);
+               dev_err(dev, "Could not get onetime pinstates, err:%d\n", ret);
+               goto out;
+       }
+#endif
+/* [PLATFORM] ADD END by YuBin */
+/* [PLATFORM]-Mod-END by FanJianjun */
+/*[BUGFIX]-Add-END by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
+
 	pdata->pctrl_data = pctrl_data;
 out:
 	return ret;
@@ -3858,6 +3875,17 @@ static int sdhci_msm_probe(struct platform_device *pdev)
 		 * weird/inconsistent state resulting in flood of interrupts.
 		 */
 		sdhci_msm_setup_pins(msm_host->pdata, true);
+
+/*[BUGFIX]-Add-BEGIN by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
+/* [PLATFORM]-Mod-BEGIN by TCTSH.FanJianjun, 2015/11/18, idol455 follows idol4s, task:884456 */
+/* [PLATFORM]-Mod-BEGIN by TCTNB.Yubin, 2015/11/11, config sim det gpios to make sd card det voltage is right */
+#if defined(CONFIG_TCT_8X76_COMMON)
+               pinctrl_select_state(msm_host->pdata->pctrl_data->pctrl,
+                       msm_host->pdata->pctrl_data->pins_onetime);
+#endif
+/* [PLATFORM] ADD END by YuBin */
+/* [PLATFORM]-Mod-END by FanJianjun */
+/*[BUGFIX]-Add-END by TCTNB.bin.su,12/03/2015,Task850685,macro optimization.*/
 
 		/*
 		 * This delay is needed for stabilizing the card detect GPIO

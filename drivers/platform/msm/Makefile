@@ -5,6 +5,9 @@
 ccflags-y += -Idrivers/misc/
 ccflags-y += -Isecurity/selinux -Isecurity/selinux/include
 
+#Add Begin by liping.gao(SH)-2015/10/19:disable hard reset,task:528566
+#KBUILD_CFLAGS += -DCONFIG_TCT_LONGPRESS_DISABLE
+#Add end by liping.gao(SH)-2015/10/19,task:528566
 obj-$(CONFIG_MSM_BUS_SCALING) += msm_bus/
 obj-$(CONFIG_BUS_TOPOLOGY_ADHOC) += msm_bus/
 obj-$(CONFIG_MSM_MHI) += mhi/
