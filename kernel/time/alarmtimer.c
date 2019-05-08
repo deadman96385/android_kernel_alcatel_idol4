@@ -28,6 +28,12 @@
 #include "lpm-levels.h"
 #include <linux/workqueue.h>
 
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-885104, 2015/11/24, add time delta */
+#ifdef CONFIG_FEATURE_TCTNB_POWEROFF_ALARM
+#define ALARM_DELTA 40
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
+
 /**
  * struct alarm_base - Alarm timer bases
  * @lock:		Lock for syncrhonized access to the base
@@ -84,6 +90,13 @@ void power_on_alarm_init(void)
 	rtc_tm_to_time(&rt, &alarm_time);
 
 	if (alarm_time) {
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-885104, 2015/11/24, add time delta */
+#ifdef CONFIG_FEATURE_TCTNB_POWEROFF_ALARM
+		alarm_time += ALARM_DELTA;
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
+
 		alarm_ktime = ktime_set(alarm_time, 0);
 		alarm_init(&init_alarm, ALARM_POWEROFF_REALTIME, NULL);
 		alarm_start(&init_alarm, alarm_ktime);
@@ -132,6 +145,13 @@ void set_power_on_alarm(void)
 	 * It is to make sure that alarm time will be always
 	 * bigger than wall time.
 	 */
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-885104, 2015/11/24, add time delta */
+#ifdef CONFIG_FEATURE_TCTNB_POWEROFF_ALARM
+	alarm_secs -= ALARM_DELTA;
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
+
 	if (alarm_secs <= wall_time.tv_sec + 1)
 		goto disable_alarm;
 

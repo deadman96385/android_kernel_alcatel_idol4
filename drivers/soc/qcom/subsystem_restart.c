@@ -38,6 +38,7 @@
 #include <soc/qcom/subsystem_notif.h>
 #include <soc/qcom/socinfo.h>
 #include <soc/qcom/sysmon.h>
+#include <soc/qcom/efsrecovery.h>
 
 #include <asm/current.h>
 
@@ -48,6 +49,10 @@ module_param(disable_restart_work, uint, S_IRUGO | S_IWUSR);
 
 static int enable_debug;
 module_param(enable_debug, int, S_IRUGO | S_IWUSR);
+
+#ifdef CONFIG_MSM_DLOAD_MODE
+char panic_subsystem[16];
+#endif /* CONFIG_MSM_DLOAD_MODE */
 
 #define SHUTDOWN_ACK_MAX_LOOPS	50
 #define SHUTDOWN_ACK_DELAY	100
@@ -900,6 +905,14 @@ static void subsystem_restart_wq_func(struct work_struct *work)
 	track->p_state = SUBSYS_RESTARTING;
 	spin_unlock_irqrestore(&track->s_lock, flags);
 
+	//Add by TCTSH.lijuan.wu 2016.01.11 task-1394158 [efs] erase efs partition while modem crash
+	#ifdef CONFIG_TCT_EFS_RECOVERY
+	//try to restore efs partition
+	if(0==strcmp(desc->name,"modem")){
+		do_efsrecovery();
+	}
+	#endif
+
 	/* Collect ram dumps for all subsystems in order here */
 	for_each_subsys_device(list, count, NULL, subsystem_ramdump);
 
@@ -994,6 +1007,11 @@ int subsystem_restart_dev(struct subsys_device *dev)
 
 	pr_info("Restart sequence requested for %s, restart_level = %s.\n",
 		name, restart_levels[dev->restart_level]);
+
+#ifdef CONFIG_MSM_DLOAD_MODE
+	memset(panic_subsystem, 0, sizeof(panic_subsystem));
+	memcpy(panic_subsystem, name, strlen(name));
+#endif /* CONFIG_MSM_DLOAD_MODE */
 
 	if (WARN(disable_restart_work == DISABLE_SSR,
 		"subsys-restart: Ignoring restart request for %s.\n", name)) {
@@ -1736,6 +1754,10 @@ static int __init subsys_restart_init(void)
 			&panic_nb);
 	if (ret)
 		goto err_soc;
+
+#ifdef CONFIG_MSM_DLOAD_MODE
+	sprintf(panic_subsystem, "%s", "unknown");
+#endif /* CONFIG_MSM_DLOAD_MODE */
 
 	return 0;
 

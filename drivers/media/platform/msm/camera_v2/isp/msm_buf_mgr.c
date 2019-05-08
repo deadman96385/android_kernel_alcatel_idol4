@@ -500,8 +500,10 @@ static int msm_isp_get_buf(struct msm_isp_buf_mgr *buf_mgr, uint32_t id,
 		list_for_each_entry_safe(temp_buf_info,
 			safe, &bufq->share_head, share_list) {
 			if (!temp_buf_info->buf_used[id] &&
-				(temp_buf_info->ping_pong_bit ==
-				ping_pong_bit)) {
+				//(temp_buf_info->ping_pong_bit ==
+				//ping_pong_bit)) {
+				//take qcom patch by xiaoming.hu@tcl.com for IOMMU bug 1527485 
+				(temp_buf_info->ping_pong_bit & (1 << ping_pong_bit))) { 
 				temp_buf_info->buf_used[id] = 1;
 				temp_buf_info->buf_get_count++;
 				*buf_cnt = temp_buf_info->buf_get_count;
@@ -619,7 +621,9 @@ static int msm_isp_get_buf(struct msm_isp_buf_mgr *buf_mgr, uint32_t id,
 				temp_buf_info->buf_reuse_flag = 1;
 				temp_buf_info->buf_used[id] = 1;
 				temp_buf_info->buf_get_count = 1;
-				temp_buf_info->ping_pong_bit = ping_pong_bit;
+				//temp_buf_info->ping_pong_bit = ping_pong_bit;
+				//take qcom patch by xiaoming.hu@tcl.com for IOMMU bug 1527485 
+				temp_buf_info->ping_pong_bit = (1 << ping_pong_bit); 
 				INIT_LIST_HEAD(&temp_buf_info->share_list);
 				list_add_tail(&temp_buf_info->share_list,
 							  &bufq->share_head);
@@ -660,7 +664,9 @@ static int msm_isp_get_buf(struct msm_isp_buf_mgr *buf_mgr, uint32_t id,
 			(*buf_info)->buf_get_count = 1;
 			(*buf_info)->buf_put_count = 0;
 			(*buf_info)->buf_reuse_flag = 0;
-			(*buf_info)->ping_pong_bit = ping_pong_bit;
+			//(*buf_info)->ping_pong_bit = ping_pong_bit;
+			// take qcom patch by xiaoming.hu@tcl.com for IOMMU bug 1527485 
+			(*buf_info)->ping_pong_bit = (1 << ping_pong_bit); 
 			list_add_tail(&(*buf_info)->share_list,
 						  &bufq->share_head);
 			if (msm_buf_check_head_sanity(bufq)

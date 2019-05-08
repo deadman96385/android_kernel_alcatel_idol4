@@ -56,6 +56,11 @@ config GENERIC_CLOCKEVENTS_MIN_ADJUST
 config GENERIC_CMOS_UPDATE
 	bool
 
+# [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-885104, 2015/11/24, add time delta
+config FEATURE_TCTNB_POWEROFF_ALARM
+	bool "Support Power-off Alarm"
+# [PLATFORM]-Add-END by TCTNB.PANYI
+
 if GENERIC_CLOCKEVENTS
 menu "Timers subsystem"
 

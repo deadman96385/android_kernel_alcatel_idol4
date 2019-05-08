@@ -176,6 +176,12 @@ static void ci13xxx_msm_reset(void)
 	}
 }
 
+//[BUGFIX]-Add-BEGIN by TCTNB.93391,11/30/2015,ALM927723,USB Driver Auto Install
+#if defined(CONFIG_JRD_CD_ROM_EMUM_EJECT) && !defined (FEATURE_TCTNB_MMITEST)
+extern void jrd_enum_cdrom(void);
+#endif
+//[BUGFIX]-Add-END by TCTNB.93391,11/30/2015,ALM927723,USB Driver Auto Install
+
 static void ci13xxx_msm_mark_err_event(void)
 {
 	struct ci13xxx *udc = _udc;
@@ -204,6 +210,13 @@ static void ci13xxx_msm_notify_event(struct ci13xxx *udc, unsigned event)
 		break;
 	case CI13XXX_CONTROLLER_DISCONNECT_EVENT:
 		dev_info(dev, "CI13XXX_CONTROLLER_DISCONNECT_EVENT received\n");
+
+        //[BUGFIX]-Add-BEGIN by TCTNB.93391,11/30/2015,ALM927723,USB Driver Auto Install
+		#if defined(CONFIG_JRD_CD_ROM_EMUM_EJECT) && !defined (FEATURE_TCTNB_MMITEST)
+		jrd_enum_cdrom();
+		#endif
+        //[BUGFIX]-Add-END by TCTNB.93391,11/30/2015,ALM927723,USB Driver Auto Install
+
 		ci13xxx_msm_disconnect();
 		ci13xxx_msm_resume();
 		break;

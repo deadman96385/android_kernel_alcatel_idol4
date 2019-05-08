@@ -46,7 +46,9 @@
 #include "mmc_ops.h"
 #include "sd_ops.h"
 #include "sdio_ops.h"
-
+/*[PLATFORM]-MOD BEGIN by TCTSH.xuefei.wang,2016/03/16,PR1535106 and PR1739489 for SD CARD DETECT delay*/
+static int sd_count=0;
+/*[PLATFORM]-MOD END by TCTSH.xuefei.wang,2016/03/16,PR1535106 and PR1739489 for SD CARD DETECT delay*/
 /* If the device is not responding */
 #define MMC_CORE_TIMEOUT_MS	(10 * 60 * 1000) /* 10 minute timeout */
 
@@ -3691,8 +3693,23 @@ static int mmc_rescan_try_freq(struct mmc_host *host, unsigned freq)
 	 * should be ignored by SD/eMMC cards.
 	 */
 	sdio_reset(host);
+/*[PLATFORM]-MOD BEGIN by TCTSH.xuefei.wang,2016/03/16,PR1535106 and PR1739489 for SD CARD DETECT delay*/
+  if(sd_count==0)
+  { 
+     if(!strncmp(mmc_hostname(host),"mmc1",4))
+      {
+#if defined (CONFIG_TCT_8X76_IDOL4) || defined (CONFIG_TCT_8X76_IDOL452_CRICKET)
+       mmc_delay(120);
+#elif defined (CONFIG_TCT_8X76_IDOL4S) || defined (CONFIG_TCT_8X76_IDOL4S_VDF)
+       mmc_delay(120);
+#endif
+       sd_count=1;
+    }
+  }
+/*[PLATFORM]-MOD END by TCTSH.xuefei.wang,2016/03/16,PR1535106 and PR1739489 for SD CARD DETECT delay*/
+     /*[PLATFORM]-MOD BEGIN by TCTNB.YQJ,2016/03/02,for SD CARD DETECT failed issue -60ms delay*/
+    /*[PLATFORM]-MOD END by TCTNB.YQJ*/
 	mmc_go_idle(host);
-
 	mmc_send_if_cond(host, host->ocr_avail);
 
 	/* Order's important: probe SDIO, then SD, then MMC */

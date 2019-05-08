@@ -3754,7 +3754,7 @@ int mdss_mdp_ctl_update_fps(struct mdss_mdp_ctl *ctl)
 	int ret = 0;
 	int new_fps;
 
-	mutex_lock(&ctl->offlock);
+	//mutex_lock(&ctl->offlock);//eagle.li del for defect1251992
 
 	pinfo = &ctl->panel_data->panel_info;
 	if (!pinfo) {
@@ -3795,7 +3795,7 @@ int mdss_mdp_ctl_update_fps(struct mdss_mdp_ctl *ctl)
 	ATRACE_END("config_fps");
 
 exit:
-	mutex_unlock(&ctl->offlock);
+	//mutex_unlock(&ctl->offlock);//eagle.li del for defect1251992
 
 	return ret;
 }

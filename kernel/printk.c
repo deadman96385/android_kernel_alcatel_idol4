@@ -46,6 +46,12 @@
 #include <linux/irq_work.h>
 #include <linux/utsname.h>
 
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-1042088, 2015/12/03, add work to print wall time */
+#ifdef CONFIG_TCT_8X76_COMMON
+#include <linux/rtc.h>
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
+
 #include <asm/uaccess.h>
 
 #define CREATE_TRACE_POINTS
@@ -63,7 +69,7 @@ extern void printascii(char *);
 #define DEFAULT_CONSOLE_LOGLEVEL 7 /* anything MORE serious than KERN_DEBUG */
 
 int console_printk[4] = {
-	DEFAULT_CONSOLE_LOGLEVEL,	/* console_loglevel */
+	DEFAULT_MESSAGE_LOGLEVEL,	/* console_loglevel */
 	DEFAULT_MESSAGE_LOGLEVEL,	/* default_message_loglevel */
 	MINIMUM_CONSOLE_LOGLEVEL,	/* minimum_console_loglevel */
 	DEFAULT_CONSOLE_LOGLEVEL,	/* default_console_loglevel */
@@ -285,6 +291,40 @@ static u32 __log_align __used = LOG_ALIGN;
 #else
 #define LOG_MAGIC(msg)
 #endif
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-1042088, 2015/12/03, add work to print wall time */
+#ifdef CONFIG_TCT_8X76_COMMON
+#define MS_TO_S		1000
+extern struct timezone sys_tz;
+// peroid to print wall time in seconds
+static int walltime_peroid = 60;
+module_param_named(show_walltime_peroid_seconds, walltime_peroid, int, 0644);
+
+static void print_walltime_work_fn(struct work_struct *work);
+static DECLARE_DELAYED_WORK(print_walltime_work, print_walltime_work_fn);
+static void print_walltime_work_fn(struct work_struct *work)
+{
+	struct timespec ts;
+	struct rtc_time tm;
+	int timezone_hours;
+
+	getnstimeofday(&ts);
+
+	if (ts.tv_sec >= sys_tz.tz_minuteswest*60) {
+		ts.tv_sec -= sys_tz.tz_minuteswest*60;
+		timezone_hours = 0-sys_tz.tz_minuteswest/60;
+	} else
+		timezone_hours = 0;
+
+	rtc_time_to_tm(ts.tv_sec, &tm);
+	printk(KERN_ERR "walltime: %d-%02d-%02d %02d:%02d:%02d GMT%+d\n",
+				tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+				tm.tm_hour, tm.tm_min, tm.tm_sec, timezone_hours);
+
+	schedule_delayed_work(&print_walltime_work, msecs_to_jiffies(walltime_peroid*MS_TO_S));
+}
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
 
 /* cpu currently holding logbuf_lock */
 static volatile unsigned int logbuf_cpu = UINT_MAX;
@@ -2191,6 +2231,12 @@ void suspend_console(void)
 	console_lock();
 	console_suspended = 1;
 	up(&console_sem);
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-1042088, 2015/12/03, add work to print wall time */
+#ifdef CONFIG_TCT_8X76_COMMON
+	cancel_delayed_work(&print_walltime_work);
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
 }
 
 void resume_console(void)
@@ -2200,6 +2246,16 @@ void resume_console(void)
 	down(&console_sem);
 	console_suspended = 0;
 	console_unlock();
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-1042088, 2015/12/03, add work to print wall time */
+/**
+ * we hope to print wall time immediately to avoid resume cannot last for 1 minutes which
+ * leads walltime cannot print for long time
+ */
+#ifdef CONFIG_TCT_8X76_COMMON
+	schedule_delayed_work(&print_walltime_work, 0);
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
 }
 
 static void __cpuinit console_flush(struct work_struct *work)
@@ -2755,6 +2811,13 @@ static int __init printk_late_init(void)
 		}
 	}
 	hotcpu_notifier(console_cpu_notify, 0);
+
+/* [PLATFORM]-Add-BEGIN by TCTNB.PANYI, Task-1042088, 2015/12/03, add work to print wall time */
+#ifdef CONFIG_TCT_8X76_COMMON
+	schedule_delayed_work(&print_walltime_work, msecs_to_jiffies(walltime_peroid*MS_TO_S));
+#endif
+/* [PLATFORM]-Add-END by TCTNB.PANYI */
+
 	return 0;
 }
 late_initcall(printk_late_init);

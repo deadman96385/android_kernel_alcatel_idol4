@@ -171,21 +171,24 @@ if test ! "$srctree" -ef .; then
 fi
 
 # CONFIG_LOCALVERSION and LOCALVERSION (if set)
-res="${res}${CONFIG_LOCALVERSION}${LOCALVERSION}"
+res="${res}${LOCALVERSION}"
 
+#[BUGFIX]-MOD-BEGIN by TCTNB.ZhangJie,09/21/2015,573008
+#Remove uesless kernel version info to avoid wifi driver can not start
 # scm version string if not at a tagged commit
-if test "$CONFIG_LOCALVERSION_AUTO" = "y"; then
+#if test "$CONFIG_LOCALVERSION_AUTO" = "y"; then
 	# full scm version string
-	res="$res$(scm_version)"
-else
+#	res="$res$(scm_version)"
+#else
 	# append a plus sign if the repository is not in a clean
 	# annotated or signed tagged state (as git describe only
 	# looks at signed or annotated tags - git tag -a/-s) and
 	# LOCALVERSION= is not specified
-	if test "${LOCALVERSION+set}" != "set"; then
-		scm=$(scm_version --short)
-		res="$res${scm:++}"
-	fi
-fi
+#	if test "${LOCALVERSION+set}" != "set"; then
+#		scm=$(scm_version --short)
+#		res="$res${scm:++}"
+#	fi
+#fi
+#[BUGFIX]-MOD-END by TCTNB.ZhangJie
 
 echo "$res"

@@ -31,6 +31,7 @@
 #include <soc/qcom/ramdump.h>
 #include <soc/qcom/smem.h>
 #include <soc/qcom/smsm.h>
+#include <soc/qcom/efsrecovery.h>
 
 #include "peripheral-loader.h"
 #include "pil-q6v5.h"
@@ -63,6 +64,14 @@ static void log_modem_sfr(void)
 	pr_err("modem subsystem failure reason: %s.\n", reason);
 
 	smem_reason[0] = '\0';
+
+	//Add-BEGIN by TCTSH.lijuan.wu 2016.01.11 task-1394158 [efs] erase efs partition while modem crash
+	#ifdef CONFIG_TCT_EFS_RECOVERY
+	//check modem crash reason
+	efsrecovery_check(reason);
+	#endif
+	//Add-END by TCTSH.lijuan.wu
+
 	wmb();
 }
 

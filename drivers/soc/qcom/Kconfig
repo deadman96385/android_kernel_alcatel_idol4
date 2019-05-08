@@ -468,6 +468,18 @@ config MSM_PIL_MSS_QDSP6V5
 
 	  If unsure, say N.
 
+config TCT_EFS_RECOVERY
+	bool "TCT EFS Recovery"
+	depends on MSM_PIL_MSS_QDSP6V5 && MSM_SUBSYSTEM_RESTART
+	help
+	  This option enables the TCT efs recovery framework.
+
+	  The TCT efs recovery framework provides support to efs data restore
+	  when efs data have something wrong with a reference counted API.
+	  It also notifies userspace of transitions between these states via
+	  sysfs.
+
+
 config MSM_PIL_FEMTO
 	tristate "FSM9900 and FSM9010 Boot Support"
 	depends on MSM_PIL && (ARCH_FSM9900 || ARCH_FSM9010)
@@ -698,5 +710,11 @@ config MSM_VSENS
 	  Say yes to support these devices.
 
 source "drivers/soc/qcom/memshare/Kconfig"
+
+config MSM_SMART_SUPPORT
+	bool "Msm smart policy support"
+	help
+	  Enable this to be able to choose the smart policy for controlling the
+	  performance and power on some msm platforms.
 
 endif # ARCH_MSM

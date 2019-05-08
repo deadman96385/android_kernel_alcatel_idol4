@@ -2,6 +2,9 @@
 
 ccflags-$(CONFIG_DEBUG_GPIO)	+= -DDEBUG
 
+#sun zhangyang add for 1052675
+obj-$(CONFIG_TCT_TARGET_WCNSS_NV_CA) += tcl-check-ca.o
+
 obj-$(CONFIG_GPIO_DEVRES)	+= devres.o
 obj-$(CONFIG_GPIOLIB)		+= gpiolib.o
 obj-$(CONFIG_OF_GPIO)		+= gpiolib-of.o
@@ -89,3 +92,6 @@ obj-$(CONFIG_GPIO_WM8994)	+= gpio-wm8994.o
 obj-$(CONFIG_GPIO_XILINX)	+= gpio-xilinx.o
 obj-$(CONFIG_MSM_SMP2P)		+= gpio-msm-smp2p.o
 obj-$(CONFIG_MSM_SMP2P_TEST)	+= gpio-msm-smp2p-test.o
+#[PLATFORM]-add Begin by TCTNB.ZXZ,2015/12/02,PR-665685,for GPIO NPI DOWN
+obj-$(CONFIG_GPIO_NPI_DOWN_STATUS)      += gpio-npi-down-status.o
+#[PLATFORM]-add End by TCTNB.ZXZ,2015/12/02

@@ -476,6 +476,17 @@ struct ipa_wlan_comm_memb {
 	atomic_t active_clnt_cnt;
 };
 
+/* Qcom patch merged by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
+enum ipa_wakelock_ref_client {
+	IPA_WAKELOCK_REF_CLIENT_TX  = 0,
+	IPA_WAKELOCK_REF_CLIENT_LAN_RX = 1,
+	IPA_WAKELOCK_REF_CLIENT_WAN_RX = 2,
+	IPA_WAKELOCK_REF_CLIENT_WLAN_RX = 3,
+	IPA_WAKELOCK_REF_CLIENT_ODU_RX = 4,
+	IPA_WAKELOCK_REF_CLIENT_SPS = 5,
+	IPA_WAKELOCK_REF_CLIENT_MAX
+};
+
 /**
  * struct ipa_ep_context - IPA end point context
  * @valid: flag indicating id EP context is valid
@@ -535,6 +546,8 @@ struct ipa_ep_context {
 	u32 rx_replenish_threshold;
 	bool disconnect_in_progress;
 	u32 qmi_request_sent;
+	/* Qcom patch merged by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
+	enum ipa_wakelock_ref_client wakelock_client;
 
 	/* sys MUST be the last element of this struct */
 	struct ipa_sys_context *sys;
@@ -780,7 +793,8 @@ struct ipa_active_clients {
 
 struct ipa_wakelock_ref_cnt {
 	spinlock_t spinlock;
-	int cnt;
+	/* Qcom patch merged by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
+	u32 cnt;
 };
 
 struct ipa_tag_completion {
@@ -1641,6 +1655,8 @@ void ipa_update_repl_threshold(enum ipa_client_type ipa_client);
 void ipa_flow_control(enum ipa_client_type ipa_client, bool enable,
 			uint32_t qmap_id);
 void ipa_sps_irq_control_all(bool enable);
-void ipa_inc_acquire_wakelock(void);
-void ipa_dec_release_wakelock(void);
+/* Qcom patch merged-BEGIN by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
+void ipa_inc_acquire_wakelock(enum ipa_wakelock_ref_client ref_client);
+void ipa_dec_release_wakelock(enum ipa_wakelock_ref_client ref_client);
+/* Qcom patch merged-END by TCTSH.fanjianjun, PR 1772878. fix IPA_WS wrongly blocks system suspend. */
 #endif /* _IPA_I_H_ */

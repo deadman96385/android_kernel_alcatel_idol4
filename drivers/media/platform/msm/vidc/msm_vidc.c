@@ -1298,9 +1298,8 @@ void *msm_vidc_open(int core_id, int session_type)
 		rc = -ENOMEM;
 		goto err_invalid_core;
 	}
-
-	pr_info(VIDC_DBG_TAG "Opening video instance: %p, %d\n",
-		VIDC_MSG_PRIO2STRING(VIDC_INFO), inst, session_type);
+	/*Tianliang.Zhang 2016/1/5, set this log default as debug level*/
+	dprintk(VIDC_DBG, "Opening video instance: %p, %d\n", inst, session_type);
 	mutex_init(&inst->sync_lock);
 	mutex_init(&inst->bufq[CAPTURE_PORT].lock);
 	mutex_init(&inst->bufq[OUTPUT_PORT].lock);
@@ -1501,9 +1500,8 @@ int msm_vidc_close(void *instance)
 	msm_comm_session_clean(inst);
 
 	msm_smem_delete_client(inst->mem_client);
-
-	pr_info(VIDC_DBG_TAG "Closed video instance: %p\n",
-			VIDC_MSG_PRIO2STRING(VIDC_INFO), inst);
+	/*Tianliang.Zhang 2016/1/5, set this log default as debug level*/
+	dprintk(VIDC_DBG, "Closed video instance: %p\n", inst);
 	kfree(inst);
 
 	return 0;
