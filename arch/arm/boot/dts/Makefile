@@ -213,9 +213,18 @@ targets += dtbs
 targets += $(DTB_LIST)
 
 #used for cleaning - not building
+ifndef CONFIG_TCT_8X76_COMMON
 subdir- := dts/qcom
 endif
 
+ifdef CONFIG_TCT_8X76_IDOL4S
+subdir- := idol4S
+endif
+
+ifdef CONFIG_TCT_8X76_IDOL4S_VDF
+subdir- := idol4S_vdf
+endif
+endif
 # *.dtb used to be generated in the directory above. Clean out the
 # old build results so people don't accidentally use them.
 dtbs: $(addprefix $(obj)/, $(DTB_LIST))
